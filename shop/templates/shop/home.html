@@ -1,0 +1,108 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Главная - MIS U KIS{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>MIS U KIS</h1>
+        <p class="hero-subtitle">Искусство ухода за собой</p>
+        <p class="hero-description">Откройте для себя мир элегантной косметики, где каждая деталь создана для вашего комфорта и уверенности</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary">Исследовать коллекцию</a>
+    </div>
+</section>
+
+<section class="featured-products">
+    <div class="section-header">
+    </div>
+
+    <div class="products-layout">
+        <!-- Новинки - асимметричная сетка -->
+        <div class="category-section">
+            <h3 class="category-title">Новинки</h3>
+            <div class="products-grid featured-grid">
+                {% for product in new_products %}
+                <div class="product-mini-card {% cycle 'card-large' 'card-small' 'card-medium' %}">
+                    <a href="/product/{{ product.id }}/" class="product-link">
+                        {% if product.image %}
+                        <div class="product-image">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        </div>
+                        {% else %}
+                        <div class="product-image no-image">
+                            <span>📦</span>
+                        </div>
+                        {% endif %}
+                        <div class="product-info">
+                            <h4 class="product-name">{{ product.name }}</h4>
+                            <div class="product-price">{{ product.price|floatformat:0 }} ₽</div>
+                            {% if product.is_new %}
+                            <div class="product-badge new">NEW</div>
+                            {% endif %}
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Популярные товары - другая асимметрия -->
+        <div class="category-section">
+            <h3 class="category-title">Популярное</h3>
+            <div class="products-grid popular-grid">
+                {% for product in popular_products %}
+                <div class="product-mini-card {% cycle 'card-medium' 'card-large' 'card-small' %}">
+                    <a href="/product/{{ product.id }}/" class="product-link">
+                        {% if product.image %}
+                        <div class="product-image">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        </div>
+                        {% else %}
+                        <div class="product-image no-image">
+                            <span>⭐</span>
+                        </div>
+                        {% endif %}
+                        <div class="product-info">
+                            <h4 class="product-name">{{ product.name }}</h4>
+                            <div class="product-price">{{ product.price|floatformat:0 }} ₽</div>
+                            <div class="product-stats">
+                                <span class="orders-count">{{ product.orders_count }} заказов</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="brand-values">
+    <div class="values-grid">
+        <div class="value-item">
+            <div class="value-icon">🎯</div>
+            <h4>Точный подбор</h4>
+            <p>Индивидуальный подход к каждому типу кожи</p>
+        </div>
+        <div class="value-item">
+            <div class="value-icon">💎</div>
+            <h4>Премиум качество</h4>
+            <p>Только проверенные бренды и составы</p>
+        </div>
+        <div class="value-item">
+            <div class="value-icon">✨</div>
+            <h4>Видимый результат</h4>
+            <p>Эффективные формулы с доказанным действием</p>
+        </div>
+    </div>
+</section>
+
+<div class="cta-section">
+    <div class="cta-content">
+        <h3>Готовы начать уход?</h3>
+        <p>Откройте полную коллекцию наших продуктов</p>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">Смотреть каталог</a>
+    </div>
+</div>
+{% endblock %}

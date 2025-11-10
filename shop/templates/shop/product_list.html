@@ -1,23 +1,64 @@
-<!-- Наследование от базового шаблона -->
 {% extends 'shop/base.html' %}
-<!-- Загрузка тегов для работы со статическими файлами -->
 {% load static %}
 
-<!-- Переопределение заголовка страницы -->
-{% block title %}{{ title }}{% endblock %}
-
-<!-- Начало блока основного содержимого -->
 {% block content %}
 <h2>Наши товары</h2>
 
+<!-- Форма фильтрации -->
+<div class="filters-section">
+    <form id="filter-form" method="GET">
+        <div class="filter-group">
+            <label>Категория:</label>
+            <select name="category" id="category-filter">
+                <option value="">Все категории</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" 
+                        {% if current_category == category.id|stringformat:"i" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Цена:</label>
+            <input type="number" name="min_price" placeholder="от" value="{{ min_price|default:'' }}">
+            <input type="number" name="max_price" placeholder="до" value="{{ max_price|default:'' }}">
+        </div>
+        
+        <div class="filter-group">
+            <label>Дата добавления:</label>
+            <select name="date_filter" id="date-filter">
+                <option value="">Все товары</option>
+                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>За последнюю неделю</option>
+                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>За последний месяц</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Сортировка:</label>
+            <select name="sort_by" id="sort-by">
+                <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Сначала новые</option>
+                <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Сначала старые</option>
+                <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Цена по возрастанию</option>
+                <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Цена по убыванию</option>
+                <option value="popularity" {% if current_sort == 'popularity' %}selected{% endif %}>По популярности</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Применить фильтры</button>
+        <button type="button" id="reset-filters" class="btn btn-secondary">Сбросить</button>
+    </form>
+</div>
+
 <!-- Контейнер для сетки товаров -->
-<div class="products-grid">
+<div class="products-grid" id="product-list">
     <!-- Цикл для отображения каждого товара из переданного списка -->
-    {% for product in products %}
+    {% for product in page_obj %}
     <!-- Карточка товара -->
     <div class="product-card">
         <!-- Ссылка на детальную страницу товара -->
-        <a href="{% url 'shop:product_detail' product.id %}" class="product-link">
+        <a href="/product/{{ product.id }}/" class="product-link">
             <!-- Проверка наличия изображения у товара -->
             {% if product.image %}
             <!-- Контейнер для изображения товара -->
@@ -40,25 +81,122 @@
                 {{ product.price|floatformat:2 }} ₽
             </div>
             
-            <!-- Описание товара, обрезанное до 15 слов -->
-            <p class="product-description">
-                {{ product.description|truncatewords:15 }}
-            </p>
+            <!-- Категория товара -->
+            <div class="category">{{ product.category.name }}</div>
             
             <!-- Дата добавления товара в формате день.месяц.год -->
             <div class="product-date">
                 Добавлен: {{ product.created_at|date:"d.m.Y" }}
             </div>
+            
+            <!-- Количество заказов -->
+            <div class="orders">Заказов: {{ product.orders_count }}</div>
+            
+            <!-- Бейдж новинки -->
+            {% if product.is_new %}
+            <div class="new-badge">Новинка!</div>
+            {% endif %}
         </a>
     </div>
     <!-- Блок для случая, когда товаров нет -->
     {% empty %}
     <div class="no-products">
         <h3>Товары отсутствуют</h3>
-        <p>В нашем магазине пока нет данного товара.</p>
+        <p>В нашем магазине пока нет товаров.</p>
     </div>
     <!-- Конец цикла по товарам -->
     {% endfor %}
 </div>
-<!-- Конец блока content -->
+
+<!-- Пагинация -->
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Первая</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">« Предыдущая</a>
+    {% endif %}
+    
+    <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Следующая »</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Последняя</a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filter-form');
+    const productList = document.getElementById('product-list');
+    const resetButton = document.getElementById('reset-filters');
+    
+    // Функция для обновления списка товаров через AJAX
+    function updateProductList() {
+        const formData = new FormData(filterForm);
+        const queryString = new URLSearchParams(formData).toString();
+        
+        fetch(`/ajax-product-list/?${queryString}`)
+            .then(response => response.json())
+            .then(data => {
+                productList.innerHTML = '';
+                
+                if (data.products.length === 0) {
+                    productList.innerHTML = '<div class="no-products"><h3>Товары отсутствуют</h3><p>По вашему запросу ничего не найдено.</p></div>';
+                    return;
+                }
+                
+                data.products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <a href="/product/${product.id}/" class="product-link">
+                            ${product.image_url ? 
+                                `<div class="product-image"><img src="${product.image_url}" alt="${product.name}"></div>` : 
+                                '<div class="product-image no-image"><span>Нет изображения</span></div>'
+                            }
+                            <h3 class="product-name">${product.name}</h3>
+                            <div class="product-price">${product.price} ₽</div>
+                            <div class="category">${product.category}</div>
+                            <div class="product-date">Добавлен: ${product.created_at}</div>
+                            <div class="orders">Заказов: ${product.orders_count}</div>
+                            ${product.is_new ? '<div class="new-badge">Новинка!</div>' : ''}
+                        </a>
+                    `;
+                    productList.appendChild(productCard);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    
+    // Обработчики изменения фильтров
+    document.getElementById('category-filter').addEventListener('change', updateProductList);
+    document.getElementById('date-filter').addEventListener('change', updateProductList);
+    document.getElementById('sort-by').addEventListener('change', updateProductList);
+    
+    // Обработчики для полей цены (с задержкой)
+    let priceTimeout;
+    document.querySelector('input[name="min_price"]').addEventListener('input', function() {
+        clearTimeout(priceTimeout);
+        priceTimeout = setTimeout(updateProductList, 500);
+    });
+    
+    document.querySelector('input[name="max_price"]').addEventListener('input', function() {
+        clearTimeout(priceTimeout);
+        priceTimeout = setTimeout(updateProductList, 500);
+    });
+    
+    // Сброс фильтров
+    resetButton.addEventListener('click', function() {
+        filterForm.reset();
+        updateProductList();
+    });
+    
+    // Предотвращаем стандартную отправку формы
+    filterForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        updateProductList();
+    });
+});
+</script>
 {% endblock %}

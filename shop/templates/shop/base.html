@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Интернет-магазин MIS U MIS{% endblock %}</title>
+    <title>{% block title %}Интернет-магазин MIS U KIS{% endblock %}</title>
     {% load static %}
      <!-- Подключение CSS файла со стилями -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
@@ -12,16 +12,14 @@
 <body>
      <!-- Шапка сайта -->
     <header>
-        <div class="container">
-            <h1>Интерент-магазин MIS U KIS</h1>
+        <div class="container">     
              <!-- Навигационное меню -->
             <nav class="nav">
-                <!-- Ссылка на главную страницу со списком товаров -->
-                <a href="{% url 'shop:product_list' %}">Главная</a>
-                <a href="#">Каталог товаров</a>
-                <a href="#">О нас</a>
-                <a href="#">Контакты</a>
-            </nav>
+                <a href="/" class="{% if request.path == '/' %}active{% endif %}">Главная</a>
+                <a href="{% url 'product_list' %}" class="{% if request.path == '/product_list/' %}active{% endif %}">Каталог товаров</a>
+                <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">О нас</a>
+                <a href="/contacts/" class="{% if request.path == '/contacts/' %}active{% endif %}">Контакты</a>
+</nav>
         </div>
     </header>
  <!-- Основное содержимое страницы -->
@@ -46,5 +44,8 @@
             <p>&copy; 2025 Интернет-магазин MIS U KIS. Все права защищены.</p>
         </div>
     </footer>
+
+    {% block extra_js %}
+    {% endblock %}
 </body>
 </html>

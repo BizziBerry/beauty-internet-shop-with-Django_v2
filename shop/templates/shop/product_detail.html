@@ -1,64 +1,142 @@
-<!-- Наследование от базового шаблона -->
 {% extends 'shop/base.html' %}
-<!-- Загрузка тегов для работы со статическими файлами -->
 {% load static %}
 
-<!-- Переопределение заголовка страницы -->
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ product.name }} - Детали товара{% endblock %}
 
-<!-- Начало блока основного содержимого -->
 {% block content %}
-<h2>Наши товары</h2>
+<!-- Контейнер для детальной информации о товаре -->
+<div class="product-detail-container">
+    <!-- Хлебные крошки -->
+    <div class="breadcrumbs">
+        <a href="/">Главная</a> &gt; 
+        <a href="{% url 'product_list' %}">Каталог</a> &gt; 
+        <a href="{% url 'product_list' %}?category={{ product.category.id }}">{{ product.category.name }}</a> &gt; 
+        <span>{{ product.name }}</span>
+    </div>
 
-<!-- Контейнер для сетки товаров -->
-<div class="products-grid">
-    <!-- Цикл для отображения каждого товара из переданного списка -->
-    {% for product in products %}
-    <!-- Карточка товара -->
-    <div class="product-card">
-        <!-- Ссылка на детальную страницу товара -->
-        <a href="{% url 'shop:product_detail' product.id %}" class="product-link">
+    <!-- Основная информация о товаре -->
+    <div class="product-detail-main">
+        <!-- Блок с изображением товара -->
+        <div class="product-image-section">
             <!-- Проверка наличия изображения у товара -->
             {% if product.image %}
-            <!-- Контейнер для изображения товара -->
-            <div class="product-image">
-                <!-- Отображение изображения товара -->
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            <div class="product-main-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
             </div>
             {% else %}
-            <!-- Блок для случая, когда изображение отсутствует -->
-            <div class="product-image no-image">
-                <span>Нет изображения</span>
+            <div class="product-main-image no-image">
+                <img src="{% static 'images/placeholder.jpg' %}" alt="Нет изображения" class="product-img">
+                <span>Изображение отсутствует</span>
             </div>
             {% endif %}
-            
+        </div>
+
+        <!-- Блок с информацией о товаре -->
+        <div class="product-info-section">
             <!-- Название товара -->
-            <h3 class="product-name">{{ product.name }}</h3>
+            <h1 class="product-title">{{ product.name }}</h1>
             
-            <!-- Цена товара с форматированием (2 знака после запятой) -->
-            <div class="product-price">
+            <!-- Категория товара -->
+            <div class="product-category">
+                Категория: <a href="{% url 'product_list' %}?category={{ product.category.id }}">{{ product.category.name }}</a>
+            </div>
+            
+            <!-- Цена товара -->
+            <div class="product-price-detail">
                 {{ product.price|floatformat:2 }} ₽
             </div>
-            
-            <!-- Описание товара, обрезанное до 15 слов -->
-            <p class="product-description">
-                {{ product.description|truncatewords:15 }}
-            </p>
-            
-            <!-- Дата добавления товара в формате день.месяц.год -->
-            <div class="product-date">
-                Добавлен: {{ product.created_at|date:"d.m.Y" }}
+
+            <!-- Блок с мета-информацией -->
+            <div class="product-meta-info">
+                <!-- Количество заказов -->
+                <div class="meta-item">
+                    <span class="meta-label">Заказов:</span>
+                    <span class="meta-value">{{ product.orders_count }}</span>
+                </div>
+                
+                <!-- Дата добавления -->
+                <div class="meta-item">
+                    <span class="meta-label">Добавлен:</span>
+                    <span class="meta-value">{{ product.created_at|date:"d.m.Y" }}</span>
+                </div>
+                
+                <!-- Статус новинки -->
+                {% if product.is_new %}
+                <div class="meta-item">
+                    <span class="new-badge">Новинка!</span>
+                </div>
+                {% endif %}
+                
+                <!-- Статус доступности -->
+                <div class="meta-item">
+                    <span class="meta-label">Статус:</span>
+                    <span class="meta-value {% if product.is_available %}available{% else %}not-available{% endif %}">
+                        {% if product.is_available %}В наличии{% else %}Нет в наличии{% endif %}
+                    </span>
+                </div>
             </div>
-        </a>
+
+            <!-- Кнопка добавления в корзину -->
+            {% if product.is_available %}
+            <button class="add-to-cart-btn">
+                <span class="btn-icon">🛒</span>
+                Добавить в корзину
+            </button>
+            {% else %}
+            <button class="add-to-cart-btn disabled" disabled>
+                Товар недоступен
+            </button>
+            {% endif %}
+        </div>
     </div>
-    <!-- Блок для случая, когда товаров нет -->
-    {% empty %}
-    <div class="no-products">
-        <h3>Товары отсутствуют</h3>
-        <p>В нашем магазине пока нет данного товара.</p>
+
+    <!-- Блок с полным описанием товара -->
+    <div class="product-description-section">
+        <h2 class="section-title">Описание товара</h2>
+        <div class="product-description-full">
+            {{ product.description|linebreaks }}
+        </div>
     </div>
-    <!-- Конец цикла по товарам -->
-    {% endfor %}
+
+    <!-- Блок с похожими товарами -->
+    {% if similar_products %}
+    <div class="similar-products-section">
+        <h2 class="section-title">Похожие товары</h2>
+        <div class="similar-products-grid">
+            <!-- Цикл для отображения похожих товаров -->
+            {% for similar_product in similar_products %}
+            <div class="similar-product-card">
+                <a href="/product/{{ similar_product.id }}/" class="product-link">
+                    <!-- Изображение похожего товара -->
+                    {% if similar_product.image %}
+                    <div class="similar-product-image">
+                        <img src="{{ similar_product.image.url }}" alt="{{ similar_product.name }}">
+                    </div>
+                    {% else %}
+                    <div class="similar-product-image no-image">
+                        <img src="{% static 'images/placeholder.jpg' %}" alt="Нет изображения">
+                        <span>Нет изображения</span>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Название похожего товара -->
+                    <h3 class="similar-product-name">{{ similar_product.name }}</h3>
+                    
+                    <!-- Цена похожего товара -->
+                    <div class="similar-product-price">
+                        {{ similar_product.price|floatformat:2 }} ₽
+                    </div>
+                    
+                    <!-- Статус новинки -->
+                    {% if similar_product.is_new %}
+                    <div class="similar-product-badge">Новинка</div>
+                    {% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 <!-- Конец блока content -->
 {% endblock %}

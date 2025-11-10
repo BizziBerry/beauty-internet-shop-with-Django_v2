@@ -1,84 +1,112 @@
-# Internet shop MIS U KIS
+# 🛍️ Интернет-магазин с умной фильтрацией и сортировкой
 
-## 🛠 Tech Stack
-![Django](https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=flat&logo=sqlite&logoColor=white)
+<div align="center">
 
-## Описание проекта
-Данный проект представляет собой простой интернет-магазин косметики, разработанный на Django. Магазин отображает список товаров и детальную информацию о каждом товаре.
+![Django](https://img.shields.io/badge/Django-4.2-green.svg)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.2-blue.svg)
+![AJAX](https://img.shields.io/badge/AJAX-Enabled-orange.svg)
 
-### Главная страница
-![Главная страница магазина](screenshot.jpg)
+**Современный интернет-магазин** с продвинутой системой фильтрации, сортировки и асинхронной загрузкой товаров без перезагрузки страницы.
 
-### Функциональность
-**Модель товара** (```Product```) с полями:
-```name``` - название товара (CharField)
-```description``` - описание товара (TextField)
-```price``` - цена товара (DecimalField)
-```image``` - изображение товара (ImageField)
-```created_at``` - дата создания (DateTimeField)
+  [🛠 Технологии](#-технологии) • [📸 Демонстрация](#-демонстрация) • [🛠 Установка и запуск](#-установка-и-запуск) 
 
-**Представления:**
-```product_list``` - отображает список всех товаров
-```product_detail``` - отображает детальную информацию о товаре
 
-**Шаблоны:**
-```base.html``` - базовый шаблон с общим стилем (хэдер и футер)
-```product_list.html``` - список товаров (наследуется от base.html)
-```product_detail.html``` - детальная информация о товаре (наследуется от base.html)
+</div>
 
-**Статические файлы:**
-CSS-стили для улучшения внешнего вида
-Адаптивный дизайн
+## ✨ Особенности
 
-**Дополнительно реализовано:**
-Наполнение магазина 5 косметическими товарами через Django Administration
-Категории товаров (уход за лицом, декоративная косметика, уход за волосами, уход за телом, парфюмерия)
-Фильтры Django для форматирования цены и текста
-Обработка случая, когда товар не найден
+### 🎯 Основной функционал
+- **Умная фильтрация** по категориям, цене и дате добавления
+- **Гибкая сортировка** по популярности, цене и новизне
+- **Пагинация** с навигацией по страницам
+- **AJAX-подгрузка** - всё работает без перезагрузки страницы
+- **Адаптивный дизайн** - выглядит отлично на всех устройствах
 
-**Особенности реализации**
-Наследование шаблонов для избежания дублирования кода
-Использование фильтров Django для форматирования данных
-Статические файлы для стилизации
-Обработка ошибок (404 при отсутствии товара)
-Адаптивный дизайн для мобильных устройств
+### 🚀 Технологии
+- **Backend**: Django 4.2, Python 3.9+
+- **Frontend**: JavaScript (ES6+), Bootstrap 5.2
+- **База данных**: SQLite/PostgreSQL
+- **Асинхронность**: Fetch API, JSON responses
 
-## Установка и запуск
+## 📸 Демонстрация
 
-### Активируйте виртуальное окружение:
+### 🎨 Главная страница с товарами
+![Главная страница](screenshots/home.jpg)
+*Чистый и современный интерфейс списка товаров*
+
+### 🔍 Фильтрация и сортировка в действии
+![Фильтрация](screenshots/filtered.jpg)
+*Мгновенная фильтрация по категориям и цене без перезагрузки*
+
+### 📱 Адаптивный дизайн
+![Мобильная версия](screenshots/mobile.jpg)
+*Идеальное отображение на мобильных устройствах*
+
+### ⚡ AJAX-пагинация
+![Пагинация](screenshots/pagination.jpg)
+*Быстрое переключение между страницами*
+
+## 🛠 Установка и запуск
+
+### 1. Клонирование репозитория
+```bash
+git clone https://github.com/BizziBerry/ecommerce-filtering.git
+cd ecommerce-filtering
+```
+### 2. Создание виртуального окружения
 ```
 bash
 python -m venv venv
-source venv/bin/activate  # для Linux/MacOS
-venv\Scripts\activate     # для Windows
+source venv/bin/activate  # Linux/Mac
+# или
+venv\Scripts\activate  # Windows
 ```
-### Установите зависимости:
-```
-bash
-pip install django pillow
-```
-### Примените миграции:
+
+### 3. Установка зависимостей
 ```
 bash
-python manage.py makemigrations
+pip install -r requirements.txt
+```
+
+### 4. Настройка базы данных
+```
+bash
 python manage.py migrate
+python manage.py createsuperuser
+python manage.py loaddata products.json  # демо-данные
 ```
-### Создайте суперпользователя для доступа к админке:
+
+### 5. Запуск сервера
 ```
 bash
-python manage.py createsuperuser
+python manage.py runserver
+Откройте http://localhost:8000/shop/ в браузере.
 ```
-### Запустите сервер:
+### 6. Запуск админ-панели
 ```
 bash
 python manage.py runserver
 ```
-### Добавьте товары через Django Administration:
+Перейти: ```http://127.0.0.1:8000/admin/```
 
-Перейдите по адресу: ```http://127.0.0.1:8000/admin/```
-Войдите с данными суперпользователя
-В разделе "Products" добавьте товары
+## 🤝 Вклад в проект
+- Форкните репозиторий
+- Создайте ветку для фичи (git checkout -b feature/amazing-feature)
+- Закомитьте изменения (git commit -m 'Add amazing feature')
+- Запушьте в ветку (git push origin feature/amazing-feature)
+- Откройте Pull Request
+
+## 📄 Лицензия
+MIT License - свободно используйте этот проект для обучения и разработки.
+
+## 👥 Автор
+Разработчик - BizziBerry
+
+## 🙏 Благодарности
+- Команда Django за отличный фреймворк
+- Сообщество Bootstrap за красивые компоненты
+
+<div align="center">
+⭐ Если вам понравился проект, не забудьте поставить звезду!
+</div>
